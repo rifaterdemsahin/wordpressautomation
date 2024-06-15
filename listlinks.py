@@ -24,6 +24,10 @@ def fetch_all_posts_with_keyword(keyword, per_page):
             response = requests.get(url, auth=HTTPBasicAuth(USERNAME, PASSWORD))
             logger.info(f"Response Status Code: {response.status_code}")
 
+            if response.status_code != 200:
+                logger.error(f"Request failed with status code: {response.status_code}")
+                break
+
             # Check if the response content type is JSON
             if response.headers.get('Content-Type') != 'application/json; charset=UTF-8':
                 logger.error(f"Unexpected Content-Type: {response.headers.get('Content-Type')}")
@@ -35,6 +39,7 @@ def fetch_all_posts_with_keyword(keyword, per_page):
             if not posts:
                 break
             all_posts.extend(posts)
+            logger.info(f"Fetched {len(posts)} posts from page {page}")
             page += 1
         except requests.exceptions.RequestException as e:
             logger.error(f"Request failed: {e}")
@@ -60,7 +65,7 @@ def main():
     logger.info("Script started")
     posts = fetch_all_posts_with_keyword(KEYWORD, POSTS_PER_PAGE)
     if posts:
-        logger.info(f"Successfully fetched posts with keyword '{KEYWORD}'")
+        logger.info(f"Successfully fetched {len(posts)} posts with keyword '{KEYWORD}'")
         post_links = "\n".join([post['link'] for post in posts])
         
         # Write post links to the file
